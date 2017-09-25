@@ -1,0 +1,53 @@
+map <F5> :set hlsearch!<CR>
+map <F4> :set spell!<CR>
+map <F7>:'<,'>w !xclip -i<CR>
+map <F8>:r !xclip -o<CR>
+set nocompatible
+set ruler
+set number
+set list
+set listchars=tab:..,trail:-
+
+set tabstop=4
+set shiftwidth=4
+set expandtab
+
+set modeline
+set backspace=indent,eol,start
+set fileformats=unix,dos,mac
+set smartindent                 " smart autoindenting when starting a new line
+set smarttab
+
+set wildignore=*.bak,*.o,*.e,*~ " wildmenu: ignore these extensions
+set wildmenu                    " command-line completion in an enhanced mode
+set history=50          " keep 50 lines of command line history
+set showcmd             " display incomplete commands
+"set incsearch          " do incremental searching
+
+"set mouse=a
+
+set autoread                    " read open files again when changed outside Vim
+augroup checktime
+    au!
+    if !has("gui_running")
+        "silent! necessary otherwise throws errors when using command
+        "line window.
+        autocmd BufEnter        * silent! checktime
+        autocmd CursorHold      * silent! checktime
+        autocmd CursorHoldI     * silent! checktime
+        "these two _may_ slow things down. Remove if they do.
+        "autocmd CursorMoved     * silent! checktime
+        "autocmd CursorMovedI    * silent! checktime
+    endif
+augroup END
+
+filetype plugin indent on
+"let g:solarized_termcolors=256
+syntax enable
+set background=dark
+colorscheme solarized
+
+let g:vikiOpenUrlWith_mailto = 'thunderbird -compose %{URL}'
+let g:vikiOpenFileWith_html  = "silent !firefox %{FILE}"
+let g:vikiNameSuffix=".viki"
+autocmd! BufRead,BufNewFile *.viki set filetype=viki

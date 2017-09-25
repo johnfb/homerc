@@ -1,0 +1,7 @@
+
+tclear() {
+    clear
+    if test $TMUX; then
+        tmux clear-history
+    fi
+}

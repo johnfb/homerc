@@ -1,0 +1,4 @@
+#!/bin/bash
+
+export http_proxy='http://web:justdoit@webproxy.arlut.utexas.edu:3128/'
+

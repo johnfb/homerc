@@ -1,0 +1,10 @@
+[user]
+    name = John Bridgman
+    email = johnfb@arlut.utexas.edu
+[merge]
+    tool = meld
+[gui]
+    recentrepo = /home/johnfb/src/z
+[alias]
+    st = status -s
+    b = branch -avv

@@ -1,0 +1,48 @@
+[ui]
+username = John Bridgman <johnfb@arlut.utexas.edu>
+merge = meld
+ignore = ~/.hgignore
+
+[extensions]
+hgext.graphlog =
+color =
+hgext.extdiff =
+hgext.mq =
+transplant =
+hgext.record =
+hgk = 
+prompt = ~/src/hg-prompt/prompt.py
+shelve = 
+[hgk]
+path = ~/src/mercurial-3.8-rc/contrib/hgk
+vdiff=meld
+
+[diff]
+
+[extdiff]
+cmd.meld =
+cmd.vimdiff = vim
+opts.vimdiff = -f '+next' '+execute "DirDiff" argv(0) argv(1)'
+
+[merge-patterns]
+** = meld
+
+[merge-tools]
+meld.executable = /usr/bin/meld
+
+[trusted]
+groups = atlsdd
+
+[web]
+cacerts = /etc/pki/tls/certs/ca-bundle.crt
+
+[color]
+qseries.unapplied = none
+status.ignored = none
+
+
+[tortoisehg]
+vdiff = meld
+editor = gedit
+tabwidth = 4
+monitorrepo = localonly

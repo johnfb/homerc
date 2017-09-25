@@ -1,0 +1,45 @@
+#!/bin/sh
+
+#hg help prompt >> /dev/null 2>&1
+#HAVE_HG_PROMPT=$?
+#
+#hg_ps1() {
+#   if (($HAVE_HG_PROMPT == 0)); then
+#       timeout 1s hg prompt "{ on {branch}}{ at {bookmark}}{status}{ patch {patch}} {({patch|topindex})}" 2> /dev/null
+#   fi
+#}
+
+source ~/init/git-prompt.sh
+
+
+_update_prompt () {
+    local exit_status="$?"
+    local PN='\[$(tput sgr0)\]'
+    local PI='\[$(tput bold)\]'
+    local PR='\[$(tput setaf 1)\]' # red
+    local PG='\[$(tput setaf 2)\]' # green
+    local PY='\[$(tput setaf 3)\]' # yellow
+    local PB='\[$(tput setaf 4)\]' # blue
+    local PP='\[$(tput setaf 5)\]' # purple
+    local PC='\[$(tput setaf 6)\]' # cyan
+    local PLG='\[$(tput setaf 7)\]' # light green
+    local PDG='\[$(tput setaf 8)\]' # dark green
+    local PLB='\[$(tput setaf 12)\]' # light blue
+    local PW='\[$(tput setaf 15)\]' # white
+
+
+    if [ "${exit_status}" -ne "0" ]; then
+        local return_status="${PR}${PI}# Returned: ${exit_status}${PN}\n"
+    fi
+    export PS1="\\u@\\h ${PI}\\w${PN}$(__git_ps1 " (%s)")\\n${return_status}${PY}[\\!]${PG}\\\$${PN} "
+}
+if [ ${INIT_PROMPT_COMMAND_SET:-0} -ne 1 ]; then
+    export PROMPT_COMMAND="_update_prompt;${PROMPT_COMMAND}"
+    export INIT_PROMPT_COMMAND_SET=1
+fi
+
+
+#if [ "$PS1" ]; then
+#    PS1='\u@\h \w$(__git_ps1 " (%s)")\n\\$ '
+#fi
+

@@ -1,10 +1,14 @@
 [user]
-    name = John Bridgman
-    email = johnfb@arlut.utexas.edu
+	name = John Bridgman
+	email = johnfb@arlut.utexas.edu
 [merge]
-    tool = meld
+	tool = kdiff3
 [gui]
-    recentrepo = /home/johnfb/src/z
+	recentrepo = /home/johnfb/src/z
 [alias]
-    st = status -s
-    b = branch -avv
+	st = status -s
+	b = branch -avv
+[diff]
+	guitool = kdiff3
+[difftool "kdiff3"]
+	path = /usr/bin/kdiff3

@@ -9,7 +9,7 @@
 #   fi
 #}
 
-source ~/init/git-prompt.sh
+source $INIT_DIR/git-prompt.sh
 
 
 _update_prompt () {

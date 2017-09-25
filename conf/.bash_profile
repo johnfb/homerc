@@ -56,16 +56,16 @@ then
 fi
 
 ######
-
-if [ -d ~/init ]; then
-    for f in ~/init/*.init; do
+INIT_DIR=~/homerc/init
+if [ -d $INIT_DIR ]; then
+    for f in $INIT_DIR/*.init; do
         $DEBUG && echo "Loading init script $f"
         . $f
     done
 
-    if [ -d ~/init/${HOSTNAME} ]
+    if [ -d $INIT_DIR/${HOSTNAME} ]
     then
-        for f in ~/init/${HOSTNAME}/*.init; do
+        for f in $INIT_DIR/${HOSTNAME}/*.init; do
             $DEBUG && echo "Loading init script $f"
             . $f
         done

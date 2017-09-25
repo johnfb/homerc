@@ -2,7 +2,7 @@
 
 export FIGNORE="~:%:.o:CVS:SCCS:.DS_Store:.AppleDouble:.svn"
 export HISTCONTROL="ignoredups"
-export HISTFILE=".history/bash_${HOSTNAME}"
+export HISTFILE="~/.history/bash_${HOSTNAME}"
 export HISTFILESIZE=50
 export HISTSIZE=50
 

@@ -1,0 +1,10 @@
+#!/bin/bash
+
+if  [ $?HOSTNAME ]
+then
+    HOSTNAME="`uname -n | cut -d. -f1`"
+    export HOSTNAME
+fi
+$DEBUG && echo "Running on $HOSTNAME"
+
+

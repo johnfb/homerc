@@ -1,45 +1,17 @@
-#/etc/skel/local.[bash_]profile     2005-05-27 zagar@arlut.utexas.edu
+#!/bin/bash
 
-DEBUG=false
-$DEBUG && echo "Setting up custom environment"
-
-if [ "$PS1" ]; then
-    stty istrip
-fi
-#PATH=/bin:/usr/bin
-#export PATH
-
-if [[ $TERM == *screen* ]]; then
-    if [ -e /usr/share/terminfo/s/screen-256color ]; then
-        export TERM='screen-256color'
-    fi
-else
-    if [ -e /usr/share/terminfo/x/xterm-256color ]; then
-        export TERM='xterm-256color'
-    else
-        export TERM='xterm-color'
-    fi
-fi
-
-$DEBUG && echo "Setting terminal colors: $TERM"
-
-
-if  [ $?HOSTNAME ]
+if [ $?DEBUG ]
 then
-    HOSTNAME="`uname -n | cut -d. -f1`"
-    export HOSTNAME
+    DEBUG=false
 fi
-$DEBUG && echo "Running on $HOSTNAME"
+
+$DEBUG && echo "Setting up custom environment"
 
 # I hate command not found handlers!!!
 if type command_not_found_handle &> /dev/null; then
     $DEBUG && echo "Unsetting command_not_found_handle"
     unset -f command_not_found_handle
 fi
-
-######
-# User Customizations
-
 
 
 if  [ -d ${HOME}/.profile.d ]

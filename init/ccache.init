@@ -1,3 +1,0 @@
-#!/bin/bash
-
-export CCACHE_DIR=/tmp/johnfb-ccache

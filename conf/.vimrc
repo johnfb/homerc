@@ -42,12 +42,8 @@ augroup checktime
 augroup END
 
 filetype plugin indent on
-"let g:solarized_termcolors=256
+let g:solarized_termcolors=256
 syntax enable
 set background=dark
 colorscheme solarized
 
-let g:vikiOpenUrlWith_mailto = 'thunderbird -compose %{URL}'
-let g:vikiOpenFileWith_html  = "silent !firefox %{FILE}"
-let g:vikiNameSuffix=".viki"
-autocmd! BufRead,BufNewFile *.viki set filetype=viki

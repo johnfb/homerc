@@ -5,6 +5,10 @@ then
     DEBUG=false
 fi
 
+if [ -f ~/.profile ]; then
+    . ~/.profile
+fi
+
 $DEBUG && echo "Setting up custom environment"
 
 # I hate command not found handlers!!!
@@ -13,6 +17,7 @@ if type command_not_found_handle &> /dev/null; then
     unset -f command_not_found_handle
 fi
 
+unset PROMPT_COMMAND
 
 if  [ -d ${HOME}/.profile.d ]
 then

@@ -1,5 +1,6 @@
-map <F5> :set hlsearch!<CR>
 map <F4> :set spell!<CR>
+map <F5> :set hlsearch!<CR>
+map <F6> :set cursorline! cursorcolumn!<CR>
 map <F7>:'<,'>w !xclip -i<CR>
 map <F8>:r !xclip -o<CR>
 set nocompatible
@@ -11,6 +12,8 @@ set listchars=tab:..,trail:-
 set tabstop=4
 set shiftwidth=4
 set expandtab
+set cursorline
+set cursorcolumn
 
 set modeline
 set backspace=indent,eol,start

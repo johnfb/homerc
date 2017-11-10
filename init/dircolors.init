@@ -1,0 +1,7 @@
+#!/bin/bash
+
+colors=$(dircolors)
+if [ $? -eq 0 ]; then
+    eval $colors
+fi
+alias ls='ls --color=auto'

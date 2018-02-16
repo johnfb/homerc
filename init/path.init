@@ -44,7 +44,7 @@ add_path_env() {
     fi
 }
 
-for dir in /usr /opt ~ ~/local ~/local/$MACHTYPE ~/local/$HOSTNAME; do
+for dir in /usr /opt ~ ~/.local ~/.local/$MACHTYPE ~/.local/$HOSTNAME; do
     add_path_env $dir
 done
 

@@ -10,11 +10,9 @@ hgext.extdiff =
 hgext.mq =
 transplant =
 hgext.record =
-hgk = 
-prompt = ~/src/hg-prompt/prompt.py
-shelve = 
+hgk =
+shelve =
 [hgk]
-path = ~/src/mercurial-3.8-rc/contrib/hgk
 vdiff=meld
 
 [diff]

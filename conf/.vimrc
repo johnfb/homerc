@@ -27,6 +27,7 @@ set history=50          " keep 50 lines of command line history
 set showcmd             " display incomplete commands
 "set incsearch          " do incremental searching
 
+let g:tex_indent_items = 0
 "set mouse=a
 
 set autoread                    " read open files again when changed outside Vim

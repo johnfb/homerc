@@ -41,6 +41,7 @@ add_path_env() {
         if [ -d $1/share/man ]; then
             add_path MANPATH $1/share/man
         fi
+        add_path_env $1/usr
     fi
 }
 

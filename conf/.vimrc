@@ -9,7 +9,7 @@ set number
 set list
 set listchars=tab:..,trail:-
 
-set tabstop=4
+set tabstop=8
 set shiftwidth=4
 set expandtab
 set cursorline
@@ -26,6 +26,8 @@ set wildmenu                    " command-line completion in an enhanced mode
 set history=50          " keep 50 lines of command line history
 set showcmd             " display incomplete commands
 "set incsearch          " do incremental searching
+
+set laststatus=2
 
 let g:tex_indent_items = 0
 "set mouse=a

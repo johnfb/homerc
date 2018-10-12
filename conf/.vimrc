@@ -6,7 +6,7 @@ map <F8>:r !xclip -o<CR>
 set nocompatible
 set ruler
 set number
-set list
+"set list
 set listchars=tab:..,trail:-
 
 set tabstop=8
@@ -25,12 +25,14 @@ set wildignore=*.bak,*.o,*.e,*~ " wildmenu: ignore these extensions
 set wildmenu                    " command-line completion in an enhanced mode
 set history=50          " keep 50 lines of command line history
 set showcmd             " display incomplete commands
-"set incsearch          " do incremental searching
 
 set laststatus=2
 
 let g:tex_indent_items = 0
-"set mouse=a
+
+if has('mouse')
+  set mouse=a
+endif
 
 set autoread                    " read open files again when changed outside Vim
 augroup checktime

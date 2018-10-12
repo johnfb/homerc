@@ -4,44 +4,44 @@ export PATH LD_LIBRARY_PATH PKG_CONFIG_PATH PYTHONPATH MANPATH CMAKE_SYSTEM_PREF
 
 add_path() {
     #echo "Checking $1=${!1}"
-    if [ ! ${!1} ]; then
-        $DEBUG && echo "Setting $1 to: $2"
+    if [ ! "${!1}" ]; then
+        $DEBUG && echo "Setting ""$1"" to: $2"
         export $1=$2
     else
-        if [[ :${!1}: != *:$2:* ]]; then
-            $DEBUG && echo "Adding $2 to $1"
-            export $1=$2:${!1}
+        if [[ ":${!1}:" != *":$2:"* ]]; then
+            $DEBUG && echo "Adding ""$2"" to $1"
+            export $1="$2:${!1}"
         fi
     fi
 }
 
 add_path_env() {
-    if [ -d $1 ]; then
+    if [ -d "$1" ]; then
 
-        add_path CMAKE_SYSTEM_PREFIX_PATH $1
+        add_path CMAKE_SYSTEM_PREFIX_PATH "$1"
 
 # binary directories
-        if [ -d $1/bin ]; then
-            add_path PATH $1/bin
+        if [ -d "$1/bin" ]; then
+            add_path PATH "$1/bin"
         fi
 
 # python directories
-        add_path PYTHONHOMESITE ${1}
-        add_path PYTHONHOMESITE ${1}
+        add_path PYTHONHOMESITE "${1}"
+        add_path PYTHONHOMESITE "${1}"
 
 # library directories
-        for lib in $1/lib $1/lib64; do
-            if [ -d $lib ]; then
-                add_path LD_LIBRARY_PATH $lib
-                add_path PKG_CONFIG_PATH $lib/pkgconfig
+        for lib in "$1/lib" "$1/lib64"; do
+            if [ -d "$lib" ]; then
+                add_path LD_LIBRARY_PATH "$lib"
+                add_path PKG_CONFIG_PATH "$lib/pkgconfig"
             fi
         done
 
 # man directories
-        if [ -d $1/share/man ]; then
-            add_path MANPATH $1/share/man
+        if [ -d "$1/share/man" ]; then
+            add_path MANPATH "$1/share/man"
         fi
-        add_path_env $1/usr
+        add_path_env "$1/usr"
     fi
 }
 
@@ -52,9 +52,9 @@ done
 setup_path() {
     if [ "x$1" != "x" ]; then
         echo "Setting paths for $1"
-        add_path_env $1
+        add_path_env "$1"
     else
         echo "Setting paths for $(pwd)"
-        add_path_env $(pwd)
+        add_path_env "$(pwd)"
     fi
 }

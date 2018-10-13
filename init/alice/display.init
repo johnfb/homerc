@@ -1,0 +1,4 @@
+#!/bin/bash
+if [ -n $DISPLAY ]; then
+    export DISPLAY=localhost:0
+fi

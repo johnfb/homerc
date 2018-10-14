@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if  [ $?HOSTNAME ]
+if  [ -z ${HOSTNAME} ]
 then
     HOSTNAME="`uname -n | cut -d. -f1`"
     export HOSTNAME

@@ -1,8 +1,10 @@
 #!/bin/bash
 
-if [ $?DEBUG ]
+if [ -z ${DEBUG} ]
 then
     DEBUG=false
+else
+    return
 fi
 
 if [ -f ~/.profile ]; then
@@ -48,4 +50,7 @@ if [ -d $INIT_DIR ]; then
         done
     fi
 fi
+
+unset f INIT_DIR DEBUG
+
 

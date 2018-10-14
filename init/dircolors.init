@@ -4,4 +4,5 @@ colors=$(dircolors)
 if [ $? -eq 0 ]; then
     eval $colors
 fi
+unset colors
 alias ls='ls --color=auto'

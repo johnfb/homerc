@@ -5,11 +5,11 @@ export PATH LD_LIBRARY_PATH PKG_CONFIG_PATH PYTHONPATH MANPATH CMAKE_SYSTEM_PREF
 add_path() {
     #echo "Checking $1=${!1}"
     if [ ! ${!1} ]; then
-        $DEBUG && echo "Setting $1 to: $2"
+        #$DEBUG && echo "Setting $1 to: $2"
         export $1=$2
     else
         if [[ :${!1}: != *:$2:* ]]; then
-            $DEBUG && echo "Adding $2 to $1"
+            #$DEBUG && echo "Adding $2 to $1"
             export $1=$2:${!1}
         fi
     fi

@@ -49,6 +49,8 @@ augroup checktime
     endif
 augroup END
 
+au! BufRead,BufNewFile *.md set filetype=markdown
+
 filetype plugin indent on
 let g:solarized_termcolors=256
 syntax enable

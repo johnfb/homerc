@@ -5,6 +5,7 @@ tclear() {
         tmux clear-history
     fi
 }
+
 tenv() {
     eval $(tmux show-environment -s)
 }

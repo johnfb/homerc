@@ -51,6 +51,10 @@ done
 
 setup_path() {
     if [ "x$1" != "x" ]; then
+        if [ "$1" != "/*" ]; then
+            echo "Setup path does not support relative paths."
+            return
+        fi
         echo "Setting paths for $1"
         add_path_env "$1"
     else

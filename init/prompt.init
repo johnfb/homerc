@@ -9,27 +9,26 @@ export GIT_PS1_SHOWUNTRACKEDFILES=1
 
 source $INIT_DIR/git-prompt.sh
 
-declare -A _PROMPT_COLOR
-_PROMPT_COLOR[N]='\['$(tput sgr0)'\]'
-_PROMPT_COLOR[I]='\['$(tput bold)'\]'
-_PROMPT_COLOR[R]='\['$(tput setaf 1)'\]' # red
-_PROMPT_COLOR[G]='\['$(tput setaf 2)'\]' # green
-_PROMPT_COLOR[Y]='\['$(tput setaf 3)'\]' # yellow
-_PROMPT_COLOR[B]='\['$(tput setaf 4)'\]' # blue
-_PROMPT_COLOR[P]='\['$(tput setaf 5)'\]' # purple
-_PROMPT_COLOR[C]='\['$(tput setaf 6)'\]' # cyan
-_PROMPT_COLOR[LG]='\['$(tput setaf 7)'\]' # light green
-_PROMPT_COLOR[DG]='\['$(tput setaf 8)'\]' # dark green
-_PROMPT_COLOR[LB]='\['$(tput setaf 12)'\]' # light blue
-_PROMPT_COLOR[W]='\['$(tput setaf 15)'\]' # white
+_PROMPT_COLOR_N='\['$(tput sgr0)'\]'
+_PROMPT_COLOR_I='\['$(tput bold)'\]'
+_PROMPT_COLOR_R='\['$(tput setaf 1)'\]' # red
+_PROMPT_COLOR_G='\['$(tput setaf 2)'\]' # green
+_PROMPT_COLOR_Y='\['$(tput setaf 3)'\]' # yellow
+_PROMPT_COLOR_B='\['$(tput setaf 4)'\]' # blue
+_PROMPT_COLOR_P='\['$(tput setaf 5)'\]' # purple
+_PROMPT_COLOR_C='\['$(tput setaf 6)'\]' # cyan
+_PROMPT_COLOR_LG='\['$(tput setaf 7)'\]' # light green
+_PROMPT_COLOR_DG='\['$(tput setaf 8)'\]' # dark green
+_PROMPT_COLOR_LB='\['$(tput setaf 12)'\]' # light blue
+_PROMPT_COLOR_W='\['$(tput setaf 15)'\]' # white
 
 _update_prompt () {
     local exit_status="$?"
 
     if [ "${exit_status}" -ne "0" ]; then
-        local return_status="${_PROMPT_COLOR[R]}${_PROMPT_COLOR[I]}# Returned: ${exit_status}${_PROMPT_COLOR[N]}\n"
+        local return_status="${_PROMPT_COLOR_R}${_PROMPT_COLOR_I}# Returned: ${exit_status}${_PROMPT_COLOR_N}\n"
     fi
-    export PS1="\\u@\\h ${_PROMPT_COLOR[I]}\\w${_PROMPT_COLOR[N]}$(__git_ps1 " (%s)")\\n${return_status}${_PROMPT_COLOR[Y]}[\\!]${_PROMPT_COLOR[G]}\\\$${_PROMPT_COLOR[N]} "
+    export PS1="\\u@\\h ${_PROMPT_COLOR_I}\\w${_PROMPT_COLOR_N}$(__git_ps1 " (%s)")\\n${return_status}${_PROMPT_COLOR_Y}[\\!]${_PROMPT_COLOR_G}\\\$${_PROMPT_COLOR_N} "
 }
 if ! grep "_update_prompt" <<< "$PROMPT_COMMAND" >/dev/null; then
     $DEBUG && echo "Setting up custom promp command"

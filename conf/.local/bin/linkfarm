@@ -1,0 +1,59 @@
+#!/bin/env python3
+
+import os
+import argparse
+import os.path
+import re
+
+def main():
+    args = argparse.ArgumentParser(description='Create and manage link farms')
+
+    args.add_argument('--ingore-path', '-x', help='paths to ignore', action='append', dest='ignore_path', default=[])
+    args.add_argument('from_dir', help='directory to link to')
+    args.add_argument('to_dir', help='directory to put links in', nargs='?', default=os.getcwd())
+
+    opts = args.parse_args()
+
+    do_walk(opts.from_dir, opts.to_dir, [re.compile(ipath) for ipath in opts.ignore_path])
+
+def do_walk(from_dir, to_dir, ignore_paths):
+    for root, dirs, files in os.walk(from_dir):
+        print('Processing {0}'.format(root))
+        relroot = os.path.relpath(root, from_dir)
+        target_root = os.path.join(to_dir, relroot)
+        if not os.path.exists(target_root):
+            os.makedirs(target_root, exist_ok=True)
+
+        # Prune the list of directories
+        new_dirs = []
+        for d in dirs:
+            fullpath = os.path.join(root, d)
+            print(f'\tExamining {fullpath}')
+            if any((ip.match(fullpath) for ip in ignore_paths)):
+                print('\t - Ignoring')
+                continue
+            elif os.path.islink(fullpath):
+                do_walk(os.path.realpath(fullpath), os.path.join(target_root, d), ignore_paths)
+            else:
+                new_dirs.append(d)
+        dirs[:] = new_dirs
+
+        for f in files:
+            abspath = os.path.realpath(os.path.join(root, f))
+            if not os.path.exists(abspath):
+                print(f'\t - {abspath} does not exist')
+                continue
+            target_path = os.path.join(target_root, f)
+            #print(f'{abspath} => {target_path}')
+            if os.path.islink(target_path):
+                if os.path.samefile(target_path, abspath):
+                    continue
+                os.unlink(target_path)
+                os.symlink(abspath, target_path)
+            elif os.path.exists(target_path):
+                print('\t - Skipping existing file {0}'.format(target_path))
+            else:
+                os.symlink(abspath, target_path)
+
+if __name__ == '__main__':
+    main()

@@ -2,7 +2,7 @@ def _main():
     import os
     import site
     import sys
-    from distutils.sysconfig import get_python_lib
+    from sysconfig import get_path
     def K(n, *args):
         return args[n]
     paths = os.environ.get('PYTHONHOMESITE')
@@ -18,8 +18,8 @@ def _main():
         except TypeError:
             continue
     for p in paths:
-        for plat_specific in (False, True):
-            np = get_python_lib(plat_specific=plat_specific, prefix=p)
+        for name in ('purelib', 'platlib'):
+            np = get_path(name, vars={'base': p, 'platbase': p})
             if os.path.isdir(np):
                 site.addsitedir(np, known_paths)
 

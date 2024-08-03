@@ -3,8 +3,11 @@
 export FIGNORE="~:%:.o:CVS:SCCS:.DS_Store:.AppleDouble:.svn"
 export HISTIGNORE="ls"
 export HISTCONTROL="ignoredups"
+if ! [ -d "${HOME}/.history" ]; then
+    mkdir "${HOME}/.history"
+fi
 export HISTFILE="${HOME}/.history/bash_${HOSTNAME}"
-export HISTFILESIZE=9000000
-export HISTSIZE=50
+export HISTFILESIZE=-1
+export HISTSIZE=-1
 
 shopt -s histappend # Make history consistent between sessions

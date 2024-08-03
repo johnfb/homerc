@@ -1,8 +1,6 @@
 #!/bin/bash
 
-colors=$(dircolors)
-if [ $? -eq 0 ]; then
-    eval $colors
+if [ -z "${LS_COLORS}" ] && type -p dircolors &>/dev/null; then
+    eval $(dircolors)
 fi
-unset colors
-alias ls='ls --color=auto'
+alias ls='ls -F --color=auto'

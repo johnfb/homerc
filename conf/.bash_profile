@@ -25,10 +25,10 @@ if  [ -d ${HOME}/.profile.d ]
 then
     PROFILE_DIR="${HOME}/.profile.d"
 
-    for file in ${PROFILE_DIR}/*.sh
+    for f in ${PROFILE_DIR}/*.sh
     do
         $DEBUG && echo "Loading profile script $f"
-        . ${file}
+        . ${f}
     done
 
     unset PROFILE_DIR

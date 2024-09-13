@@ -1,6 +1,0 @@
-#!/bin/bash
-
-if [ -z "${LS_COLORS}" ] && type -p dircolors &>/dev/null; then
-    eval $(dircolors)
-fi
-alias ls='ls -F --color=auto'

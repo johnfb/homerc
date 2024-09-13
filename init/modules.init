@@ -1,4 +1,0 @@
-if [ -d /usr/share/Modules/init ]
-then
-    . /usr/share/Modules/init/bash
-fi

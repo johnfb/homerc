@@ -26,8 +26,7 @@ function _find_includes() {
         for f in $(find "$1" -maxdepth 1 -type f -iname '*.sh'); do
             echo $(basename $f) $f
         done
-        _find_includes "$1/$(hostname -s)"
-        _find_includes "$1/$(hostname -f)"
+        _find_includes "$1/${HOSTNAME}"
         _find_includes "$1/${HOSTTYPE}"
         _find_includes "$1/${MACHTYPE}"
     fi

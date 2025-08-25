@@ -4,3 +4,6 @@
 [submodule "solarized"]
 	path = solarized
 	url = https://github.com/altercation/solarized.git
+[submodule "terminal-colors"]
+	path = terminal-colors
+	url = https://github.com/eikenb/terminal-colors.git

@@ -43,6 +43,7 @@ std_path_env() {
         $2 PYTHONHOMESITE "${1}"
 
 # library directories
+        local lib
         for lib in "$1/lib" "$1/lib64"; do
             if [ -d "$lib" ]; then
                 $2 LD_LIBRARY_PATH "$lib"
@@ -66,20 +67,24 @@ rem_path_env() {
     std_path_env "$1" remove_path
 }
 
-HOMERC_DEFAULT_ROOTS=(
-    "/opt"
-    "/opt/local"
-    "${HOME}"
-    "${HOME}/.local"
-    "${HOME}/.local/${MACHTYPE}"
-    "${HOME}/.local/${HOSTTYPE}"
-    "${HOME}/.local/$(hostname -s 2>/dev/null)"
-)
-for dir in "${HOMERC_DEFAULT_ROOTS[@]}"; do
-    add_path_env $dir
-done
-unset dir HOMERC_DEFAULT_ROOTS
-add_path PYTHONPATH ~/.python-site
+init_default_paths()
+{
+    local DEFAULT_ROOTS=(
+        "/opt"
+        "/opt/local"
+        "${HOME}"
+        "${HOME}/.local"
+        "${HOME}/.local/${MACHTYPE}"
+        "${HOME}/.local/${HOSTTYPE}"
+        "${HOME}/.local/${HOSTNAME}"
+    )
+    local dir
+    for dir in "${DEFAULT_ROOTS[@]}"; do
+        add_path_env $dir
+    done
+    # Ensure MANPATH has a : in it so that default path elements are added
+    add_path MANPATH ":"
+}
 
 ensure_abs_path() {
     local p="${1%/}"
@@ -88,8 +93,7 @@ ensure_abs_path() {
         if [ "x$rp" != "x" ]; then
             $rp $p
         else
-            echo "Can't find realpath, do not know how to find an absolute path from a relative path" >&2
-            return 1
+            readlink -f "$p"
         fi
     else
         echo $p
@@ -140,3 +144,5 @@ print_path() {
     printf "%s\n" ${PYTHONHOMESITE}
     IFS=$old
 }
+
+init_default_paths

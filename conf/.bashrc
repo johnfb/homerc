@@ -1,8 +1,5 @@
 # .bashrc
-# Source global definitions
-if [ -f /etc/bashrc ]; then
-    . /etc/bashrc
-fi
-if [ -f ~/.bash_profile ]; then
-    . ~/.bash_profile
-fi
+HOMERC="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.."; pwd)"
+source "${HOMERC}/pre_setup.sh"
+_homerc_rc_setup
+source "${HOMERC}/post_setup.sh"

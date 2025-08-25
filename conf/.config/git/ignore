@@ -1,0 +1,17 @@
+*.swp
+*.swo
+*~
+.hg/
+*.pyc
+.DS_Store
+._*
+.vscode/
+install*/
+build*/
+*.o
+*.so
+*.egg-info/
+__pycache__/
+.mypy_cache/
+*.pyc
+\.ipynb_checkpoints/

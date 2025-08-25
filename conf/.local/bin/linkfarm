@@ -1,59 +1,203 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 
-import os
+import sys
 import argparse
-import os.path
 import re
+import logging
+from pathlib import Path
+import os.path
+
+log_level_map = {
+        'critical': logging.CRITICAL,
+        'error': logging.ERROR,
+        'warning': logging.WARNING,
+        'info': logging.INFO,
+        'debug': logging.DEBUG,
+        }
+
+if sys.version_info < (3, 12):
+    def relpath(path: Path, start: Path) -> Path:
+        return Path(os.path.relpath(path, start))
+else:
+    def relpath(path: Path, start: Path) -> Path:
+        return path.relative_to(start, walk_up=True)
+
+class Operation:
+    def __init__(self, src: Path, dst: Path, args):
+        self._src = relpath(src, dst.parent) if src.is_absolute() else src
+        self._dst = dst
+        self._args = args
+    def run(self):
+        raise NotImplementedError
+
+class CreateLink(Operation):
+    def run(self):
+        if self._args.delete:
+            return
+        logging.info('create link: %s -> %s', self._dst, self._src)
+        if not self._args.simulate:
+            self._dst.symlink_to(self._src)
+
+class GoodLink(Operation):
+    def run(self):
+        if not self._args.delete:
+            return
+        logging.info('remove link: %s -> %s', self._dst, self._src)
+        if not self._args.simulate:
+            self._dst.unlink()
+
+class OrphanLink(Operation):
+    def run(self):
+        logging.info('remove orphan link: %s -> %s', self._dst, self._src)
+        if not self._args.simulate:
+            self._dst.unlink()
+
+class UpdateLink(Operation):
+    def run(self):
+        if self._args.delete:
+            return
+        logging.info('update link: %s -> %s', self._dst, self._src)
+        if not self._args.simulate:
+            self._dst.unlink()
+            self._dst.symlink_to(self._src)
+
+class FileExists(Operation):
+    def run(self):
+        logging.warning('non-symlink file exists at %s for source %s', self._dst, self._src)
+        if self._args.backup:
+            new_path = self._dst.with_name(self._dst.name + self._args.backup)
+            if new_path.exists():
+                if self._args.force:
+                    logging.warning('clobbering existing backup %s', new_path)
+                else:
+                    logging.error('backup path for %s exists, doing nothing', self._dst)
+                    return
+            logging.info('backing up %s to %s', self._dst, new_path)
+            if not self._args.simulate:
+                self._dst.rename(new_path)
+        elif self._args.force:
+            logging.info('removing existing destination %s', self._dst)
+            if not self._args.simulate:
+                self._dst.unlink()
+        logging.info('create link: %s -> %s', self._dst, self._src)
+        if not self._args.simulate:
+            self._dst.symlink_to(self._src)
+
+class CreateDir(Operation):
+    def run(self):
+        if self._args.delete:
+            return
+        if self._dst.exists():
+            return
+        logging.info('creating dir: %s', self._dst)
+        if not self._args.simulate:
+            self._dst.mkdir()
+
+class CleanupDir(Operation):
+    def run(self):
+        if not self._dst.exists():
+            return
+        if [q for q in self._dst.iterdir()]:
+            return
+        logging.info('removing empty dir: %s', self._dst)
+        if not self._args.simulate:
+            self._dst.rmdir()
+
+if sys.version_info < (3, 9):
+    def is_relative_to(p, o):
+        return all(x[0] == x[1] for x in zip(o.parts, p.parts))
+else:
+    def is_relative_to(p, o):
+        return p.is_relative_to(o)
+
+def collect_operations(args, src=None, dst=None):
+    if src is None:
+        src = args.src
+    if dst is None:
+        dst = args.dst
+    if src.is_dir():
+        subs = {s.name for s in src.iterdir()}
+        yield CreateDir(src, dst, args)
+        if dst.exists():
+            subs.update({s.name for s in dst.iterdir()})
+        if not subs:
+            return
+        for sub in subs:
+            src_sub = src/sub
+            dst_sub = dst/sub
+            if any(bool(x.match(src_sub.as_posix())) for x in args.ignore_path) \
+                    or any(bool(x.match(dst_sub.as_posix())) for x in args.ignore_path):
+                continue
+            yield from collect_operations(args, src_sub, dst_sub)
+        yield CleanupDir(src, dst, args)
+        return
+    if src.exists():
+        if dst.exists():
+            if dst.is_symlink():
+                if dst.samefile(src):
+                    yield GoodLink(src, dst, args)
+                else:
+                    yield FileExists(src, dst, args)
+            else:
+                yield FileExists(src, dst, args)
+        else: # not dst.exists()
+            if dst.is_symlink():
+                # dst is dangling symlink
+                yield UpdateLink(src, dst, args)
+            else:
+                yield CreateLink(src, dst, args)
+    else: # not src.exists()
+        if not dst.exists():
+            if dst.is_symlink():
+                r = dst.resolve()
+                if is_relative_to(r, args.src):
+                    yield OrphanLink(src, dst, args)
+            else:
+                assert False, "unreachable"
+        # else: # don't care about this entry
 
 def main():
-    args = argparse.ArgumentParser(description='Create and manage link farms')
+    argparser = argparse.ArgumentParser(description='Create and manage a link farms')
 
-    args.add_argument('--ingore-path', '-x', help='paths to ignore', action='append', dest='ignore_path', default=[])
-    args.add_argument('from_dir', help='directory to link to')
-    args.add_argument('to_dir', help='directory to put links in', nargs='?', default=os.getcwd())
+    argparser.add_argument('-l', '--log-level', help='specify log level',
+            default='info', type=str, choices=log_level_map.keys())
 
-    opts = args.parse_args()
+    argparser.add_argument('--ignore-path', '-x', help='paths to ignore',
+            type=re.compile, action='append', default=[])
 
-    do_walk(opts.from_dir, opts.to_dir, [re.compile(ipath) for ipath in opts.ignore_path])
+    argparser.add_argument('-d', '--delete', action='store_true',
+            help='remove links instead of creating them')
 
-def do_walk(from_dir, to_dir, ignore_paths):
-    for root, dirs, files in os.walk(from_dir):
-        print('Processing {0}'.format(root))
-        relroot = os.path.relpath(root, from_dir)
-        target_root = os.path.join(to_dir, relroot)
-        if not os.path.exists(target_root):
-            os.makedirs(target_root, exist_ok=True)
+    argparser.add_argument('-n', '--simulate', action='store_true',
+            help='report what would be done and do nothing')
 
-        # Prune the list of directories
-        new_dirs = []
-        for d in dirs:
-            fullpath = os.path.join(root, d)
-            print(f'\tExamining {fullpath}')
-            if any((ip.match(fullpath) for ip in ignore_paths)):
-                print('\t - Ignoring')
-                continue
-            elif os.path.islink(fullpath):
-                do_walk(os.path.realpath(fullpath), os.path.join(target_root, d), ignore_paths)
-            else:
-                new_dirs.append(d)
-        dirs[:] = new_dirs
+    argparser.add_argument('-f', '--force', action='store_true',
+            help='forcefully create links, move with backup suffix if exists or remove if backup suffix empty')
 
-        for f in files:
-            abspath = os.path.realpath(os.path.join(root, f))
-            if not os.path.exists(abspath):
-                print(f'\t - {abspath} does not exist')
-                continue
-            target_path = os.path.join(target_root, f)
-            #print(f'{abspath} => {target_path}')
-            if os.path.islink(target_path):
-                if os.path.samefile(target_path, abspath):
-                    continue
-                os.unlink(target_path)
-                os.symlink(abspath, target_path)
-            elif os.path.exists(target_path):
-                print('\t - Skipping existing file {0}'.format(target_path))
-            else:
-                os.symlink(abspath, target_path)
+    argparser.add_argument('--backup', type=str, default='.bak',
+            help='backup suffix to use when removing an existing destination')
+
+    argparser.add_argument('src', type=Path, help='directory to link to')
+
+    argparser.add_argument('dst', type=Path, help='directory to put links in',
+            nargs='?', default=Path.cwd())
+
+    args = argparser.parse_args()
+    logging.basicConfig(level=log_level_map[args.log_level])
+
+    if not args.src.exists():
+        logging.critical('source "%s" does not exist, nothing to do', args.src)
+        sys.exit(1)
+    else:
+        args.src = args.src.resolve()
+    if not args.dst.exists():
+        logging.critical('destination "%s" does not exist', args.dst)
+        sys.exit(1)
+    else:
+        args.dst = args.dst.resolve()
+
+    for op in collect_operations(args):
+        op.run()
 
 if __name__ == '__main__':
     main()

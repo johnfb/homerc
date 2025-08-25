@@ -1,0 +1,53 @@
+#!/bin/bash
+verbose=false
+recursive=false
+abort_on_error=true
+while getopts "vrf" opt; do
+    case "${opt}" in
+        v) verbose=true ;;
+        r) recursive=true ;;
+        f) abort_on_error=false ;;
+        -) break ;;
+        ?) echo "Unknown option ${opt}\n" && exit 1 ;;
+    esac
+done
+shift $((OPTIND-1))
+function main()
+{
+    local filename
+    for filename; do
+        if [ -L "${filename}" ]; then
+            local src="$(readlink -- "${filename}")"
+            if [ -f "${src}" ]; then
+                if cp --remove-destination -- "${src}" "${filename}"; then
+                    ${verbose} && echo "Broke symlink from ${src} to ${filename}"
+                else
+                    ${verbose} && echo "Error breaking symlink for ${filename}"
+                    ${abort_on_error} && return 1
+                fi
+            fi
+        elif [ -f "${filename}" ] && [ $(stat --printf "%h" -- "${filename}") -gt 1 ]; then
+            local dir=$(dirname -- "${filename}")
+            local tmp=$(TMPDIR="$dir" mktemp .tmp.XXXXXXXX)
+            if cp -p -- "${filename}" "$tmp" \
+            && mv -f -- "$tmp" "${filename}"; then
+                ${verbose} && echo "Broke hardlink ${filename}"
+            else
+                ${verbose} && echo "Error breaking hardlink for ${filename}"
+                ${abort_on_error} && return 1
+            fi
+        elif [ -d "${filename}" ] && $recursive; then
+            ${verbose} && echo "Entering ${filename}"
+            local subf
+            if main "${filename}"/*; then
+                ${verbose} && echo "Exiting ${filename}"
+            else
+                ${verbose} && echo "Recursion failed on ${filename}/${subf}"
+                ${abort_on_error} && return 1
+            fi
+        fi
+    done
+    return 0
+}
+
+main "$@"

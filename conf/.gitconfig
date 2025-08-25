@@ -2,15 +2,24 @@
 	name = John Bridgman
 	email = johnfbiii@gmail.com
 [merge]
-	tool = kdiff3
-[gui]
-	recentrepo = /home/johnfb/src/z
+	tool = meld
 [alias]
 	st = status -s
 	b = branch -avv
 [diff]
-	guitool = kdiff3
-[difftool "kdiff3"]
-	path = /usr/bin/kdiff3
+	guitool = meld
 [push]
 	default = nothing
+	recurseSubmodules = check
+[core]
+	autocrlf = false
+[pull]
+	ff = only
+[rebase]
+	stat = true
+[checkout]
+	defaultRemote = origin
+[init]
+	defaultBranch = main
+[advice]
+	detachedHead = false

@@ -79,6 +79,8 @@ class FileExists(Operation):
             logging.info('removing existing destination %s', self._dst)
             if not self._args.simulate:
                 self._dst.unlink()
+        else:
+            return
         logging.info('create link: %s -> %s', self._dst, self._src)
         if not self._args.simulate:
             self._dst.symlink_to(self._src)
@@ -137,7 +139,7 @@ def collect_operations(args, src=None, dst=None):
                 if dst.samefile(src):
                     yield GoodLink(src, dst, args)
                 else:
-                    yield FileExists(src, dst, args)
+                    yield UpdateLink(src, dst, args)
             else:
                 yield FileExists(src, dst, args)
         else: # not dst.exists()

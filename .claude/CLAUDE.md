@@ -25,7 +25,7 @@ This runs `conf/.local/bin/linkfarm conf/ $HOME`, which recursively mirrors the 
 - `profile.d/` — sourced for **all** shells (login and interactive)
 - `rc.d/` — sourced for **interactive shells only**
 
-After sourcing, `post_setup.sh` unsets all the framework functions so they don't pollute the environment.
+After sourcing, `post_setup.sh` unsets the internal framework functions. The logging API (`HOMERC_LOG`, `HOMERC_LOG_TEST`, `HOMERC_LOG_LEVEL_MAP`) is intentionally left in the environment so scripts and interactive sessions can use it after init completes.
 
 ### Host/arch overrides
 
@@ -60,6 +60,17 @@ HOMERC_LOG_LEVEL=debug bash -l  # trace/debug/info/warn/error
 ```
 
 Default is `warn` for interactive login shells, `error` otherwise.
+
+After init, `HOMERC_LOG_LEVEL` is reset to `info`. The following remain available for use in scripts and the interactive shell:
+
+| Symbol | Description |
+|---|---|
+| `HOMERC_LOG <level> <msg>` | Print `<msg>` to stderr if `<level>` meets the current threshold |
+| `HOMERC_LOG_TEST <level>` | Returns 0 if `<level>` meets the current threshold |
+| `HOMERC_LOG_LEVEL` | Current numeric threshold (set this to change verbosity) |
+| `HOMERC_LOG_LEVEL_MAP` | Associative array mapping level names to numbers |
+
+Level names: `trace`, `debug`, `info`, `warn`, `error`.
 
 ## Adding new config
 

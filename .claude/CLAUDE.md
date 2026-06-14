@@ -72,6 +72,16 @@ After init, `HOMERC_LOG_LEVEL` is reset to `info`. The following remain availabl
 
 Level names: `trace`, `debug`, `info`, `warn`, `error`.
 
+## Using an alternate home directory
+
+`conf/init_home.sh` (deployed to `~/init_home.sh`) lets you point the shell at a different home directory than `$HOME`. It sets `HOME` to its own parent directory and re-sources `.bashrc`, so you can run:
+
+```bash
+bash --rcfile /path/to/some/dir/init_home.sh
+```
+
+to get a shell with that directory as its home, picking up all the homerc config rooted there.
+
 ## Adding new config
 
 - Shell functions/aliases/exports used in all shells → `profile.d/NN-name.sh`

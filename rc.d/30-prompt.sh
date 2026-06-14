@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #export GIT_PS1_SHOWDIRTYSTATE=0
 #export GIT_PS1_SHOWSTASHSTATE=0

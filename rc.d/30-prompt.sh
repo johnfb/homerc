@@ -5,7 +5,7 @@
 #export GIT_PS1_SHOWUNTRACKEDFILES=0
 GIT_PS1_SHOWCOLORHINTS=0
 
-source $HOMERC/imported/git-prompt.sh
+source "$HOMERC/imported/git-prompt.sh"
 
 # From man page the "portable definitions" of the forground color numbers are:
 # 0 - black   #000000

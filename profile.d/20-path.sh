@@ -80,7 +80,7 @@ init_default_paths()
     )
     local dir
     for dir in "${DEFAULT_ROOTS[@]}"; do
-        add_path_env $dir
+        add_path_env "$dir"
     done
     # Ensure MANPATH has a : in it so that default path elements are added
     add_path MANPATH ":"

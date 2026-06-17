@@ -1,4 +1,7 @@
-#!/usr/bin/python3
+#!/bin/bash
+'''exec' python3 $0 "$@"
+'''
+# vim: ft=python
 
 import sys
 import argparse

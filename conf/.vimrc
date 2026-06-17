@@ -28,6 +28,10 @@ set showcmd             " display incomplete commands
 
 set laststatus=2
 
+if exists('+colorcolumn')
+    set colorcolumn=80
+endif
+
 let g:tex_indent_items = 0
 
 if has('mouse')

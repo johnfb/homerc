@@ -9,3 +9,4 @@ tclear() {
 tenv() {
     eval $(tmux show-environment -s)
 }
+

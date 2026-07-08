@@ -15,3 +15,5 @@ __pycache__/
 .mypy_cache/
 *.pyc
 \.ipynb_checkpoints/
+
+**/.claude/settings.local.json

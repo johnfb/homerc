@@ -25,7 +25,7 @@ declare -A HOMERC_LOG_LEVEL_MAP=(["error"]=5 ["warn"]=4 ["info"]=3 ["debug"]=2 [
 
 function HOMERC_LOG_TEST()
 {
-    [ ${HOMERC_LOG_LEVEL_MAP[$1]} -ge ${HOMERC_LOG_LEVEL} ]
+    [ "${HOMERC_LOG_LEVEL_MAP[$1]}" -ge "${HOMERC_LOG_LEVEL_MAP[${HOMERC_LOG_LEVEL}]}" ]
 }
 
 function HOMERC_LOG()
@@ -36,11 +36,11 @@ function HOMERC_LOG()
     fi
 }
 
-if [ -z ${HOMERC_LOG_LEVEL} ]; then
+if [ -z "${HOMERC_LOG_LEVEL}" ] || [ -z "${HOMERC_LOG_LEVEL_MAP[${HOMERC_LOG_LEVEL}]}" ]; then
     if [[ $- == *i* ]] && shopt -q login_shell; then
-        HOMERC_LOG_LEVEL=${HOMERC_LOG_LEVEL_MAP["warn"]}
+        HOMERC_LOG_LEVEL=warn
     else
-        HOMERC_LOG_LEVEL=${HOMERC_LOG_LEVEL_MAP["error"]}
+        HOMERC_LOG_LEVEL=error
     fi
 fi
 

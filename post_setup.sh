@@ -8,4 +8,4 @@ unset -f _homerc_base_setup
 unset -f _homerc_rc_setup
 unset -f _homerc_profile_setup
 unset -f _homerc_bash_version_at_least
-HOMERC_LOG_LEVEL=${HOMERC_LOG_LEVEL_MAP["info"]}
+HOMERC_LOG_LEVEL=info

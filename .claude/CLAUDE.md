@@ -67,7 +67,7 @@ After init, `HOMERC_LOG_LEVEL` is reset to `info`. The following remain availabl
 |---|---|
 | `HOMERC_LOG <level> <msg>` | Print `<msg>` to stderr if `<level>` meets the current threshold |
 | `HOMERC_LOG_TEST <level>` | Returns 0 if `<level>` meets the current threshold |
-| `HOMERC_LOG_LEVEL` | Current numeric threshold (set this to change verbosity) |
+| `HOMERC_LOG_LEVEL` | Current threshold level name (set this to change verbosity, e.g. `HOMERC_LOG_LEVEL=debug`) |
 | `HOMERC_LOG_LEVEL_MAP` | Associative array mapping level names to numbers |
 
 Level names: `trace`, `debug`, `info`, `warn`, `error`.

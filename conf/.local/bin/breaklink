@@ -7,8 +7,7 @@ while getopts "vrf" opt; do
         v) verbose=true ;;
         r) recursive=true ;;
         f) abort_on_error=false ;;
-        -) break ;;
-        ?) echo "Unknown option ${opt}\n" && exit 1 ;;
+        *) printf 'usage: %s [-v] [-r] [-f] path...\n' "${0##*/}" >&2; exit 1 ;;
     esac
 done
 shift $((OPTIND-1))
@@ -18,6 +17,12 @@ function main()
     for filename; do
         if [ -L "${filename}" ]; then
             local src="$(readlink -- "${filename}")"
+            # readlink yields the raw target, which is relative to the link's own
+            # directory rather than the caller's cwd.
+            case "${src}" in
+                /*) ;;
+                *) src="$(dirname -- "${filename}")/${src}" ;;
+            esac
             if [ -f "${src}" ]; then
                 if cp --remove-destination -- "${src}" "${filename}"; then
                     ${verbose} && echo "Broke symlink from ${src} to ${filename}"
@@ -28,21 +33,27 @@ function main()
             fi
         elif [ -f "${filename}" ] && [ $(stat --printf "%h" -- "${filename}") -gt 1 ]; then
             local dir=$(dirname -- "${filename}")
-            local tmp=$(TMPDIR="$dir" mktemp .tmp.XXXXXXXX)
-            if cp -p -- "${filename}" "$tmp" \
+            local tmp
+            # mktemp ignores TMPDIR when given a template, so the directory has
+            # to be part of the template to keep the copy on the target's
+            # filesystem and make the mv below a rename.
+            if ! tmp=$(mktemp "${dir}/.tmp.XXXXXXXX"); then
+                ${verbose} && echo "Error creating temp file in ${dir}"
+                ${abort_on_error} && return 1
+            elif cp -p -- "${filename}" "$tmp" \
             && mv -f -- "$tmp" "${filename}"; then
                 ${verbose} && echo "Broke hardlink ${filename}"
             else
+                rm -f -- "$tmp"
                 ${verbose} && echo "Error breaking hardlink for ${filename}"
                 ${abort_on_error} && return 1
             fi
         elif [ -d "${filename}" ] && $recursive; then
             ${verbose} && echo "Entering ${filename}"
-            local subf
             if main "${filename}"/*; then
                 ${verbose} && echo "Exiting ${filename}"
             else
-                ${verbose} && echo "Recursion failed on ${filename}/${subf}"
+                ${verbose} && echo "Recursion failed in ${filename}"
                 ${abort_on_error} && return 1
             fi
         fi

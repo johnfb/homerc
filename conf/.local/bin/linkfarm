@@ -25,9 +25,13 @@ else:
     def relpath(path: Path, start: Path) -> Path:
         return path.relative_to(start, walk_up=True)
 
+def link_target(src: Path, dst: Path) -> Path:
+    """Link text written for dst: relative to dst's directory when src is absolute."""
+    return relpath(src, dst.parent) if src.is_absolute() else src
+
 class Operation:
     def __init__(self, src: Path, dst: Path, args):
-        self._src = relpath(src, dst.parent) if src.is_absolute() else src
+        self._src = link_target(src, dst)
         self._dst = dst
         self._args = args
     def run(self):
@@ -48,6 +52,19 @@ class GoodLink(Operation):
         logging.info('remove link: %s -> %s', self._dst, self._src)
         if not self._args.simulate:
             self._dst.unlink()
+
+class RestyleLink(Operation):
+    """Resolves to src already, but its text is not the form this tool writes."""
+    def run(self):
+        if self._args.delete:
+            logging.info('remove link: %s -> %s', self._dst, self._src)
+            if not self._args.simulate:
+                self._dst.unlink()
+            return
+        logging.info('restyle link: %s -> %s', self._dst, self._src)
+        if not self._args.simulate:
+            self._dst.unlink()
+            self._dst.symlink_to(self._src)
 
 class OrphanLink(Operation):
     def run(self):
@@ -139,10 +156,12 @@ def collect_operations(args, src=None, dst=None):
     if src.exists():
         if dst.exists():
             if dst.is_symlink():
-                if dst.samefile(src):
+                if not dst.samefile(src):
+                    yield UpdateLink(src, dst, args)
+                elif os.readlink(dst) == str(link_target(src, dst)):
                     yield GoodLink(src, dst, args)
                 else:
-                    yield UpdateLink(src, dst, args)
+                    yield RestyleLink(src, dst, args)
             else:
                 yield FileExists(src, dst, args)
         else: # not dst.exists()

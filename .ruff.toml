@@ -1,0 +1,4 @@
+# linkfarm runs on hosts whose system python is 3.6, which ruff cannot express;
+# py37 is the lowest it accepts and still leaves the sys.version_info guards in
+# the script alone rather than reporting them as UP036.
+target-version = "py37"

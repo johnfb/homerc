@@ -3,12 +3,14 @@
 # vim: ft=python
 """
 
-import sys
 import argparse
-import re
 import logging
-from pathlib import Path
 import os.path
+import re
+import sys
+from pathlib import Path
+
+logger = logging.getLogger("linkfarm")
 
 log_level_map = {
     "critical": logging.CRITICAL,
@@ -60,7 +62,7 @@ class CreateLink(Operation):
     def run(self) -> int:
         if self._args.delete:
             return 0
-        logging.info("create link: %s -> %s", self._dst, self._src)
+        logger.info("create link: %s -> %s", self._dst, self._src)
         if not self._args.simulate:
             self._dst.symlink_to(self._src)
         return 0
@@ -70,7 +72,7 @@ class GoodLink(Operation):
     def run(self) -> int:
         if not self._args.delete:
             return 0
-        logging.info("remove link: %s -> %s", self._dst, self._src)
+        logger.info("remove link: %s -> %s", self._dst, self._src)
         if not self._args.simulate:
             self._dst.unlink()
         return 0
@@ -81,11 +83,11 @@ class RestyleLink(Operation):
 
     def run(self) -> int:
         if self._args.delete:
-            logging.info("remove link: %s -> %s", self._dst, self._src)
+            logger.info("remove link: %s -> %s", self._dst, self._src)
             if not self._args.simulate:
                 self._dst.unlink()
             return 0
-        logging.info("restyle link: %s -> %s", self._dst, self._src)
+        logger.info("restyle link: %s -> %s", self._dst, self._src)
         if not self._args.simulate:
             self._dst.unlink()
             self._dst.symlink_to(self._src)
@@ -94,7 +96,7 @@ class RestyleLink(Operation):
 
 class OrphanLink(Operation):
     def run(self) -> int:
-        logging.info("remove orphan link: %s -> %s", self._dst, self._src)
+        logger.info("remove orphan link: %s -> %s", self._dst, self._src)
         if not self._args.simulate:
             self._dst.unlink()
         return 0
@@ -104,7 +106,7 @@ class UpdateLink(Operation):
     def run(self) -> int:
         if self._args.delete:
             return 0
-        logging.info("update link: %s -> %s", self._dst, self._src)
+        logger.info("update link: %s -> %s", self._dst, self._src)
         if not self._args.simulate:
             self._dst.unlink()
             self._dst.symlink_to(self._src)
@@ -113,7 +115,7 @@ class UpdateLink(Operation):
 
 class FileExists(Operation):
     def run(self) -> int:
-        logging.warning(
+        logger.warning(
             "non-symlink file exists at %s for source %s", self._dst, self._src
         )
         if self._args.delete:
@@ -123,32 +125,32 @@ class FileExists(Operation):
             if new_path.exists():
                 if self._args.force:
                     if new_path.is_dir() and not new_path.is_symlink():
-                        logging.error(
+                        logger.error(
                             '"%s" is an existing backup directory, refusing to '
                             "clobber, doing nothing",
                             new_path,
                         )
                         return 1
-                    logging.warning("clobbering existing backup %s", new_path)
+                    logger.warning("clobbering existing backup %s", new_path)
                 else:
-                    logging.error("backup path for %s exists, doing nothing", self._dst)
+                    logger.error("backup path for %s exists, doing nothing", self._dst)
                     return 1
-            logging.info("backing up %s to %s", self._dst, new_path)
+            logger.info("backing up %s to %s", self._dst, new_path)
             if not self._args.simulate:
                 self._dst.rename(new_path)
         elif self._args.force:
             if self._dst.is_dir():
-                logging.error(
+                logger.error(
                     '"%s" is an existing directory, refusing to remove, doing nothing',
                     self._dst,
                 )
                 return 1
-            logging.info("removing existing destination %s", self._dst)
+            logger.info("removing existing destination %s", self._dst)
             if not self._args.simulate:
                 self._dst.unlink()
         else:
             return 0
-        logging.info("create link: %s -> %s", self._dst, self._src)
+        logger.info("create link: %s -> %s", self._dst, self._src)
         if not self._args.simulate:
             self._dst.symlink_to(self._src)
         return 0
@@ -160,7 +162,7 @@ class CreateDir(Operation):
             return 0
         if self._dst.exists():
             return 0
-        logging.info("creating dir: %s", self._dst)
+        logger.info("creating dir: %s", self._dst)
         if not self._args.simulate:
             self._dst.mkdir()
         return 0
@@ -172,7 +174,7 @@ class CleanupDir(Operation):
             return 0
         if [q for q in self._dst.iterdir()]:
             return 0
-        logging.info("removing empty dir: %s", self._dst)
+        logger.info("removing empty dir: %s", self._dst)
         if not self._args.simulate:
             self._dst.rmdir()
         return 0
@@ -230,7 +232,7 @@ def collect_operations(args, src=None, dst=None):
                 if is_relative_to(r, args.src):
                     yield OrphanLink(src, dst, args)
             else:
-                logging.warning(
+                logger.warning(
                     'source: "%s" does not exist and destination "%s" does not exist and is not a symlink',
                     src,
                     dst,
@@ -311,19 +313,19 @@ def main():
     logging.basicConfig(level=log_level_map[args.log_level])
 
     if not args.src.exists():
-        logging.critical('source "%s" does not exist, nothing to do', args.src)
+        logger.critical('source "%s" does not exist, nothing to do', args.src)
         sys.exit(1)
     else:
         args.src = args.src.resolve()
     if not args.dst.exists():
-        logging.critical('destination "%s" does not exist', args.dst)
+        logger.critical('destination "%s" does not exist', args.dst)
         sys.exit(1)
     else:
         args.dst = args.dst.resolve()
 
     errors = sum(op.run() for op in collect_operations(args))
     if errors > 0:
-        logging.error("There were %d errors during operation", errors)
+        logger.error("There were %d errors during operation", errors)
         sys.exit(1)
 
 

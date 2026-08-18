@@ -52,62 +52,67 @@ class Operation:
         self._dst = dst
         self._args = args
 
-    def run(self):
+    def run(self) -> int:
         raise NotImplementedError
 
 
 class CreateLink(Operation):
-    def run(self):
+    def run(self) -> int:
         if self._args.delete:
-            return
+            return 0
         logging.info("create link: %s -> %s", self._dst, self._src)
         if not self._args.simulate:
             self._dst.symlink_to(self._src)
+        return 0
 
 
 class GoodLink(Operation):
-    def run(self):
+    def run(self) -> int:
         if not self._args.delete:
-            return
+            return 0
         logging.info("remove link: %s -> %s", self._dst, self._src)
         if not self._args.simulate:
             self._dst.unlink()
+        return 0
 
 
 class RestyleLink(Operation):
     """Resolves to src already, but its text is not the form this tool writes."""
 
-    def run(self):
+    def run(self) -> int:
         if self._args.delete:
             logging.info("remove link: %s -> %s", self._dst, self._src)
             if not self._args.simulate:
                 self._dst.unlink()
-            return
+            return 0
         logging.info("restyle link: %s -> %s", self._dst, self._src)
         if not self._args.simulate:
             self._dst.unlink()
             self._dst.symlink_to(self._src)
+        return 0
 
 
 class OrphanLink(Operation):
-    def run(self):
+    def run(self) -> int:
         logging.info("remove orphan link: %s -> %s", self._dst, self._src)
         if not self._args.simulate:
             self._dst.unlink()
+        return 0
 
 
 class UpdateLink(Operation):
-    def run(self):
+    def run(self) -> int:
         if self._args.delete:
-            return
+            return 0
         logging.info("update link: %s -> %s", self._dst, self._src)
         if not self._args.simulate:
             self._dst.unlink()
             self._dst.symlink_to(self._src)
+        return 0
 
 
 class FileExists(Operation):
-    def run(self):
+    def run(self) -> int:
         logging.warning(
             "non-symlink file exists at %s for source %s", self._dst, self._src
         )
@@ -121,11 +126,11 @@ class FileExists(Operation):
                             "clobber, doing nothing",
                             new_path,
                         )
-                        return
+                        return 1
                     logging.warning("clobbering existing backup %s", new_path)
                 else:
                     logging.error("backup path for %s exists, doing nothing", self._dst)
-                    return
+                    return 1
             logging.info("backing up %s to %s", self._dst, new_path)
             if not self._args.simulate:
                 self._dst.rename(new_path)
@@ -135,37 +140,40 @@ class FileExists(Operation):
                     '"%s" is an existing directory, refusing to remove, doing nothing',
                     self._dst,
                 )
-                return
+                return 1
             logging.info("removing existing destination %s", self._dst)
             if not self._args.simulate:
                 self._dst.unlink()
         else:
-            return
+            return 0
         logging.info("create link: %s -> %s", self._dst, self._src)
         if not self._args.simulate:
             self._dst.symlink_to(self._src)
+        return 0
 
 
 class CreateDir(Operation):
-    def run(self):
+    def run(self) -> int:
         if self._args.delete:
-            return
+            return 0
         if self._dst.exists():
-            return
+            return 0
         logging.info("creating dir: %s", self._dst)
         if not self._args.simulate:
             self._dst.mkdir()
+        return 0
 
 
 class CleanupDir(Operation):
-    def run(self):
+    def run(self) -> int:
         if not self._dst.exists():
-            return
+            return 0
         if [q for q in self._dst.iterdir()]:
-            return
+            return 0
         logging.info("removing empty dir: %s", self._dst)
         if not self._args.simulate:
             self._dst.rmdir()
+        return 0
 
 
 def collect_operations(args, src=None, dst=None):
@@ -311,8 +319,10 @@ def main():
     else:
         args.dst = args.dst.resolve()
 
-    for op in collect_operations(args):
-        op.run()
+    errors = sum(op.run() for op in collect_operations(args))
+    if errors > 0:
+        logging.error("There were %d errors during operation", errors)
+        sys.exit(1)
 
 
 if __name__ == "__main__":

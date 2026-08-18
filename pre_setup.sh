@@ -25,12 +25,21 @@ declare -A HOMERC_LOG_LEVEL_MAP=(["error"]=5 ["warn"]=4 ["info"]=3 ["debug"]=2 [
 
 function HOMERC_LOG_TEST()
 {
-    [ "${HOMERC_LOG_LEVEL_MAP[$1]}" -ge "${HOMERC_LOG_LEVEL_MAP[${HOMERC_LOG_LEVEL}]}" ]
+    # Both names are caller-supplied and stay writable after init, so an unknown
+    # name must not reach [ ] as an empty string. An unknown message level is
+    # promoted to error so the message is still emitted rather than dropped; an
+    # unknown threshold falls back to the quietest level.
+    # An empty subscript is an error in its own right, so default the names first.
+    local level_name="${1:-error}"
+    local threshold_name="${HOMERC_LOG_LEVEL:-error}"
+    local level="${HOMERC_LOG_LEVEL_MAP[$level_name]:-${HOMERC_LOG_LEVEL_MAP[error]}}"
+    local threshold="${HOMERC_LOG_LEVEL_MAP[$threshold_name]:-${HOMERC_LOG_LEVEL_MAP[error]}}"
+    [ "$level" -ge "$threshold" ]
 }
 
 function HOMERC_LOG()
 {
-    if HOMERC_LOG_TEST $1; then
+    if HOMERC_LOG_TEST "$1"; then
         shift
         echo "$@" >&2
     fi

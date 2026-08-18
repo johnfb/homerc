@@ -190,7 +190,9 @@ def collect_operations(args, src=None, dst=None):
             yield from collect_operations(args, src_sub, dst_sub)
         yield CleanupDir(src, dst, args)
         return
-    if src.exists():
+    # A dangling symlink in the source tree is still an entry to mirror, and
+    # exists() follows the link, so it needs testing separately.
+    if src.exists() or src.is_symlink():
         if dst.exists():
             if dst.is_symlink():
                 if not dst.samefile(src):
@@ -203,21 +205,25 @@ def collect_operations(args, src=None, dst=None):
                 yield FileExists(src, dst, args)
         else:  # not dst.exists()
             if dst.is_symlink():
-                # dst is dangling symlink
-                yield UpdateLink(src, dst, args)
+                # dst is dangling, either because it points somewhere else or
+                # because src is itself a dangling link it already mirrors
+                if os.readlink(dst) == str(link_target(src, dst)):
+                    yield GoodLink(src, dst, args)
+                else:
+                    yield UpdateLink(src, dst, args)
             else:
                 yield CreateLink(src, dst, args)
-    else:  # not src.exists()
+    else:  # src is absent rather than dangling
         if not dst.exists():
             if dst.is_symlink():
                 r = dst.resolve()
                 if is_relative_to(r, args.src):
                     yield OrphanLink(src, dst, args)
             else:
-                logging.critical(
+                logging.warning(
                     'source: "%s" does not exist and destination "%s" does not exist and is not a symlink',
-                    dst,
                     src,
+                    dst,
                 )
         # else: # don't care about this entry
 

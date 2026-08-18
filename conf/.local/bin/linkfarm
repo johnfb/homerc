@@ -1,7 +1,7 @@
 #!/bin/bash
-'''exec' python3 $0 "$@"
-'''
+"""exec" python3 $0 "$@"
 # vim: ft=python
+"""
 
 import sys
 import argparse
@@ -11,99 +11,114 @@ from pathlib import Path
 import os.path
 
 log_level_map = {
-        'critical': logging.CRITICAL,
-        'error': logging.ERROR,
-        'warning': logging.WARNING,
-        'info': logging.INFO,
-        'debug': logging.DEBUG,
-        }
+    "critical": logging.CRITICAL,
+    "error": logging.ERROR,
+    "warning": logging.WARNING,
+    "info": logging.INFO,
+    "debug": logging.DEBUG,
+}
 
 if sys.version_info < (3, 12):
+
     def relpath(path: Path, start: Path) -> Path:
         return Path(os.path.relpath(path, start))
 else:
+
     def relpath(path: Path, start: Path) -> Path:
         return path.relative_to(start, walk_up=True)
+
 
 def link_target(src: Path, dst: Path) -> Path:
     """Link text written for dst: relative to dst's directory when src is absolute."""
     return relpath(src, dst.parent) if src.is_absolute() else src
+
 
 class Operation:
     def __init__(self, src: Path, dst: Path, args):
         self._src = link_target(src, dst)
         self._dst = dst
         self._args = args
+
     def run(self):
         raise NotImplementedError
+
 
 class CreateLink(Operation):
     def run(self):
         if self._args.delete:
             return
-        logging.info('create link: %s -> %s', self._dst, self._src)
+        logging.info("create link: %s -> %s", self._dst, self._src)
         if not self._args.simulate:
             self._dst.symlink_to(self._src)
+
 
 class GoodLink(Operation):
     def run(self):
         if not self._args.delete:
             return
-        logging.info('remove link: %s -> %s', self._dst, self._src)
+        logging.info("remove link: %s -> %s", self._dst, self._src)
         if not self._args.simulate:
             self._dst.unlink()
 
+
 class RestyleLink(Operation):
     """Resolves to src already, but its text is not the form this tool writes."""
+
     def run(self):
         if self._args.delete:
-            logging.info('remove link: %s -> %s', self._dst, self._src)
+            logging.info("remove link: %s -> %s", self._dst, self._src)
             if not self._args.simulate:
                 self._dst.unlink()
             return
-        logging.info('restyle link: %s -> %s', self._dst, self._src)
+        logging.info("restyle link: %s -> %s", self._dst, self._src)
         if not self._args.simulate:
             self._dst.unlink()
             self._dst.symlink_to(self._src)
 
+
 class OrphanLink(Operation):
     def run(self):
-        logging.info('remove orphan link: %s -> %s', self._dst, self._src)
+        logging.info("remove orphan link: %s -> %s", self._dst, self._src)
         if not self._args.simulate:
             self._dst.unlink()
+
 
 class UpdateLink(Operation):
     def run(self):
         if self._args.delete:
             return
-        logging.info('update link: %s -> %s', self._dst, self._src)
+        logging.info("update link: %s -> %s", self._dst, self._src)
         if not self._args.simulate:
             self._dst.unlink()
             self._dst.symlink_to(self._src)
 
+
 class FileExists(Operation):
     def run(self):
-        logging.warning('non-symlink file exists at %s for source %s', self._dst, self._src)
+        logging.warning(
+            "non-symlink file exists at %s for source %s", self._dst, self._src
+        )
         if self._args.backup:
             new_path = self._dst.with_name(self._dst.name + self._args.backup)
             if new_path.exists():
                 if self._args.force:
-                    logging.warning('clobbering existing backup %s', new_path)
+                    logging.warning("clobbering existing backup %s", new_path)
                 else:
-                    logging.error('backup path for %s exists, doing nothing', self._dst)
+                    logging.error("backup path for %s exists, doing nothing", self._dst)
                     return
-            logging.info('backing up %s to %s', self._dst, new_path)
+            logging.info("backing up %s to %s", self._dst, new_path)
             if not self._args.simulate:
                 self._dst.rename(new_path)
         elif self._args.force:
-            logging.info('removing existing destination %s', self._dst)
+            logging.info("removing existing destination %s", self._dst)
             if not self._args.simulate:
                 self._dst.unlink()
         else:
             return
-        logging.info('create link: %s -> %s', self._dst, self._src)
+        logging.info("create link: %s -> %s", self._dst, self._src)
         if not self._args.simulate:
             self._dst.symlink_to(self._src)
+
 
 class CreateDir(Operation):
     def run(self):
@@ -111,9 +126,10 @@ class CreateDir(Operation):
             return
         if self._dst.exists():
             return
-        logging.info('creating dir: %s', self._dst)
+        logging.info("creating dir: %s", self._dst)
         if not self._args.simulate:
             self._dst.mkdir()
+
 
 class CleanupDir(Operation):
     def run(self):
@@ -121,16 +137,20 @@ class CleanupDir(Operation):
             return
         if [q for q in self._dst.iterdir()]:
             return
-        logging.info('removing empty dir: %s', self._dst)
+        logging.info("removing empty dir: %s", self._dst)
         if not self._args.simulate:
             self._dst.rmdir()
 
+
 if sys.version_info < (3, 9):
+
     def is_relative_to(p, o):
         return all(x[0] == x[1] for x in zip(o.parts, p.parts))
 else:
+
     def is_relative_to(p, o):
         return p.is_relative_to(o)
+
 
 def collect_operations(args, src=None, dst=None):
     if src is None:
@@ -145,10 +165,11 @@ def collect_operations(args, src=None, dst=None):
         if not subs:
             return
         for sub in subs:
-            src_sub = src/sub
-            dst_sub = dst/sub
-            if any(bool(x.match(src_sub.as_posix())) for x in args.ignore_path) \
-                    or any(bool(x.match(dst_sub.as_posix())) for x in args.ignore_path):
+            src_sub = src / sub
+            dst_sub = dst / sub
+            if any(bool(x.match(src_sub.as_posix())) for x in args.ignore_path) or any(
+                bool(x.match(dst_sub.as_posix())) for x in args.ignore_path
+            ):
                 continue
             yield from collect_operations(args, src_sub, dst_sub)
         yield CleanupDir(src, dst, args)
@@ -164,50 +185,88 @@ def collect_operations(args, src=None, dst=None):
                     yield RestyleLink(src, dst, args)
             else:
                 yield FileExists(src, dst, args)
-        else: # not dst.exists()
+        else:  # not dst.exists()
             if dst.is_symlink():
                 # dst is dangling symlink
                 yield UpdateLink(src, dst, args)
             else:
                 yield CreateLink(src, dst, args)
-    else: # not src.exists()
+    else:  # not src.exists()
         if not dst.exists():
             if dst.is_symlink():
                 r = dst.resolve()
                 if is_relative_to(r, args.src):
                     yield OrphanLink(src, dst, args)
             else:
-                logging.critical("source: \"%s\" does not exist and destination \"%s\" does not exist and is not a symlink", dst, src)
+                logging.critical(
+                    'source: "%s" does not exist and destination "%s" does not exist and is not a symlink',
+                    dst,
+                    src,
+                )
         # else: # don't care about this entry
 
+
 def main():
-    argparser = argparse.ArgumentParser(description='Create and manage a link farms')
+    argparser = argparse.ArgumentParser(description="Create and manage a link farms")
 
-    argparser.add_argument('-l', '--log-level', help='specify log level',
-            default='info', type=str, choices=log_level_map.keys())
+    argparser.add_argument(
+        "-l",
+        "--log-level",
+        help="specify log level",
+        default="info",
+        type=str,
+        choices=log_level_map.keys(),
+    )
 
-    argparser.add_argument('--ignore-path', '-x', help='paths to ignore',
-            type=re.compile, action='append', default=[])
+    argparser.add_argument(
+        "--ignore-path",
+        "-x",
+        help="paths to ignore",
+        type=re.compile,
+        action="append",
+        default=[],
+    )
 
-    argparser.add_argument('-d', '--delete', action='store_true',
-            help='remove links instead of creating them')
+    argparser.add_argument(
+        "-d",
+        "--delete",
+        action="store_true",
+        help="remove links instead of creating them",
+    )
 
-    argparser.add_argument('-n', '--simulate', action='store_true',
-            help='report what would be done and do nothing')
+    argparser.add_argument(
+        "-n",
+        "--simulate",
+        action="store_true",
+        help="report what would be done and do nothing",
+    )
 
-    argparser.add_argument('-f', '--force', action='store_true',
-            help='overwrite an existing backup file; when --backup is empty, remove the '
-                 'existing destination instead of leaving it in place')
+    argparser.add_argument(
+        "-f",
+        "--force",
+        action="store_true",
+        help="overwrite an existing backup file; when --backup is empty, remove the "
+        "existing destination instead of leaving it in place",
+    )
 
-    argparser.add_argument('--backup', type=str, default='.bak',
-            help='suffix appended when moving an existing non-symlink destination aside '
-                 'before linking; empty disables backups, in which case an existing '
-                 'destination is left in place unless --force is given (default: %(default)r)')
+    argparser.add_argument(
+        "--backup",
+        type=str,
+        default=".bak",
+        help="suffix appended when moving an existing non-symlink destination aside "
+        "before linking; empty disables backups, in which case an existing "
+        "destination is left in place unless --force is given (default: %(default)r)",
+    )
 
-    argparser.add_argument('src', type=Path, help='directory to link to')
+    argparser.add_argument("src", type=Path, help="directory to link to")
 
-    argparser.add_argument('dst', type=Path, help='directory to put links in',
-            nargs='?', default=Path.cwd())
+    argparser.add_argument(
+        "dst",
+        type=Path,
+        help="directory to put links in",
+        nargs="?",
+        default=Path.cwd(),
+    )
 
     args = argparser.parse_args()
     logging.basicConfig(level=log_level_map[args.log_level])
@@ -226,5 +285,6 @@ def main():
     for op in collect_operations(args):
         op.run()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

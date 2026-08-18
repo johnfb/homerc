@@ -28,6 +28,17 @@ else:
         return path.relative_to(start, walk_up=True)
 
 
+if sys.version_info < (3, 9):
+
+    def is_relative_to(p, o):
+        return all(x[0] == x[1] for x in zip(o.parts, p.parts))
+
+else:
+
+    def is_relative_to(p, o):
+        return p.is_relative_to(o)
+
+
 def link_target(src: Path, dst: Path) -> Path:
     """Link text written for dst: relative to dst's directory when src is absolute."""
     return relpath(src, dst.parent) if src.is_absolute() else src
@@ -110,6 +121,12 @@ class FileExists(Operation):
             if not self._args.simulate:
                 self._dst.rename(new_path)
         elif self._args.force:
+            if self._dst.is_dir():
+                logging.error(
+                    '"%s" is an existing directory, refusing to remove, doing nothing',
+                    self._dst,
+                )
+                return
             logging.info("removing existing destination %s", self._dst)
             if not self._args.simulate:
                 self._dst.unlink()
@@ -142,22 +159,12 @@ class CleanupDir(Operation):
             self._dst.rmdir()
 
 
-if sys.version_info < (3, 9):
-
-    def is_relative_to(p, o):
-        return all(x[0] == x[1] for x in zip(o.parts, p.parts))
-else:
-
-    def is_relative_to(p, o):
-        return p.is_relative_to(o)
-
-
 def collect_operations(args, src=None, dst=None):
     if src is None:
         src = args.src
     if dst is None:
         dst = args.dst
-    if src.is_dir():
+    if src.is_dir() and not (src / ".linkdir").exists():
         subs = {s.name for s in src.iterdir()}
         yield CreateDir(src, dst, args)
         if dst.exists():

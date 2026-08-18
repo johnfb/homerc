@@ -31,7 +31,9 @@ else:
 if sys.version_info < (3, 9):
 
     def is_relative_to(p, o):
-        return all(x[0] == x[1] for x in zip(o.parts, p.parts))
+        # zip() would stop at the shorter operand, making a path that is only a
+        # prefix of o test true and get treated as an orphan below.
+        return p.parts[: len(o.parts)] == o.parts
 
 else:
 
@@ -113,6 +115,13 @@ class FileExists(Operation):
             new_path = self._dst.with_name(self._dst.name + self._args.backup)
             if new_path.exists():
                 if self._args.force:
+                    if new_path.is_dir() and not new_path.is_symlink():
+                        logging.error(
+                            '"%s" is an existing backup directory, refusing to '
+                            "clobber, doing nothing",
+                            new_path,
+                        )
+                        return
                     logging.warning("clobbering existing backup %s", new_path)
                 else:
                     logging.error("backup path for %s exists, doing nothing", self._dst)
@@ -214,7 +223,14 @@ def collect_operations(args, src=None, dst=None):
 
 
 def main():
-    argparser = argparse.ArgumentParser(description="Create and manage a link farms")
+    argparser = argparse.ArgumentParser(
+        description="Create and manage a link farms",
+        epilog="A source directory containing a file named .linkdir is linked as a "
+        "single symlink rather than recreated in the destination and populated "
+        "with a link per entry. --ignore-path does not apply below such a "
+        "directory, and the .linkdir file appears in the destination through the "
+        "link.",
+    )
 
     argparser.add_argument(
         "-l",

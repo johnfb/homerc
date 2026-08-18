@@ -14,6 +14,8 @@ A home directory configuration management system. It manages dotfiles and shell 
 
 This runs `conf/.local/bin/linkfarm conf/ $HOME`, which recursively mirrors the `conf/` directory into `$HOME` as relative symlinks. `linkfarm` is a Python script; it handles creating, updating, and removing symlinks, with `--simulate`/`--delete`/`--force` flags.
 
+A directory under `conf/` containing a file named `.linkdir` is linked as a single symlink instead of being mirrored entry by entry. Use this where a tool writes into its own config directory and the contents must not be individual links back into the repo. `--ignore-path` does not apply below a `.linkdir` directory, and the marker file itself is visible in `$HOME` through the link.
+
 ## Architecture
 
 ### Shell initialization flow

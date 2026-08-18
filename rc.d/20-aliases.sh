@@ -6,7 +6,6 @@ alias u='cd ..'
 alias uu='cd ../..'
 alias uuu='cd ../../..'
 alias m='make -j $(nproc) -l $(nproc)'
-alias cb="xclip -selection clipboard"
 
 if type -p xdg-open > /dev/null; then
     alias open='xdg-open'

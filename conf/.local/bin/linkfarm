@@ -177,10 +177,13 @@ def main():
             help='report what would be done and do nothing')
 
     argparser.add_argument('-f', '--force', action='store_true',
-            help='forcefully create links, move with backup suffix if exists or remove if backup suffix empty')
+            help='overwrite an existing backup file; when --backup is empty, remove the '
+                 'existing destination instead of leaving it in place')
 
     argparser.add_argument('--backup', type=str, default='.bak',
-            help='backup suffix to use when removing an existing destination')
+            help='suffix appended when moving an existing non-symlink destination aside '
+                 'before linking; empty disables backups, in which case an existing '
+                 'destination is left in place unless --force is given (default: %(default)r)')
 
     argparser.add_argument('src', type=Path, help='directory to link to')
 

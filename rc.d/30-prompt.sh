@@ -17,22 +17,29 @@ source "$HOMERC/imported/git-prompt.sh"
 # 6 - cyan    #00FFFF
 # 7 - white   #FFFFFF
 
-_COLOR_N=$(tput sgr0)    # reset
-_COLOR_R=$(tput setaf 1) # red
-_COLOR_G=$(tput setaf 2) # green
-_COLOR_Y=$(tput setaf 3) # yellow
-_COLOR_B=$(tput setaf 4) # blue
-_COLOR_P=$(tput setaf 5) # purple
-_COLOR_C=$(tput setaf 6) # cyan
-_COLOR_W=$(tput setaf 7) # white
-_PROMPT_COLOR_N='\['$(tput sgr0)'\]'    # reset
-_PROMPT_COLOR_R='\['$(tput setaf 1)'\]' # red
-_PROMPT_COLOR_G='\['$(tput setaf 2)'\]' # green
-_PROMPT_COLOR_Y='\['$(tput setaf 3)'\]' # yellow
-_PROMPT_COLOR_B='\['$(tput setaf 4)'\]' # blue
-_PROMPT_COLOR_P='\['$(tput setaf 5)'\]' # purple
-_PROMPT_COLOR_C='\['$(tput setaf 6)'\]' # cyan
-_PROMPT_COLOR_W='\['$(tput setaf 7)'\]' # white
+# tput writes to stderr and fails per invocation when TERM is unset; suppress that
+# so an interactive shell without TERM degrades to an uncolored prompt quietly.
+_prompt_tput() { tput "$@" 2>/dev/null; }
+
+_COLOR_N=$(_prompt_tput sgr0)    # reset
+_COLOR_R=$(_prompt_tput setaf 1) # red
+_COLOR_G=$(_prompt_tput setaf 2) # green
+_COLOR_Y=$(_prompt_tput setaf 3) # yellow
+_COLOR_B=$(_prompt_tput setaf 4) # blue
+_COLOR_P=$(_prompt_tput setaf 5) # purple
+_COLOR_C=$(_prompt_tput setaf 6) # cyan
+_COLOR_W=$(_prompt_tput setaf 7) # white
+
+_PROMPT_COLOR_N='\['"${_COLOR_N}"'\]' # reset
+_PROMPT_COLOR_R='\['"${_COLOR_R}"'\]' # red
+_PROMPT_COLOR_G='\['"${_COLOR_G}"'\]' # green
+_PROMPT_COLOR_Y='\['"${_COLOR_Y}"'\]' # yellow
+_PROMPT_COLOR_B='\['"${_COLOR_B}"'\]' # blue
+_PROMPT_COLOR_P='\['"${_COLOR_P}"'\]' # purple
+_PROMPT_COLOR_C='\['"${_COLOR_C}"'\]' # cyan
+_PROMPT_COLOR_W='\['"${_COLOR_W}"'\]' # white
+
+unset -f _prompt_tput
 
 _prompt_jobscount() {
     local stopped=$(jobs -sp | wc -l)

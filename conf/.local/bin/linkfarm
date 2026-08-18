@@ -116,6 +116,8 @@ class FileExists(Operation):
         logging.warning(
             "non-symlink file exists at %s for source %s", self._dst, self._src
         )
+        if self._args.delete:
+            return 0
         if self._args.backup:
             new_path = self._dst.with_name(self._dst.name + self._args.backup)
             if new_path.exists():

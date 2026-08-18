@@ -16,8 +16,16 @@ function _homerc_bash_version_at_least() {
 }
 
 if ! _homerc_bash_version_at_least 4; then
-    if [[ $BASH != .local/bin/bash ]] && [ -x ~/.local/bin/bash ]; then
-        exec ~/.local/bin/bash
+    # An exported marker rather than a $BASH comparison: $BASH may report a
+    # different path than the one exec'd (symlink, PATH lookup), and if the
+    # newer bash is itself too old the compare-based guard loops forever.
+    if [ -z "${HOMERC_REEXEC}" ] && [ -x "${HOME}/.local/bin/bash" ]; then
+        export HOMERC_REEXEC=1
+        _homerc_reexec_opts=()
+        [[ $- == *i* ]] && _homerc_reexec_opts+=(-i)
+        shopt -q login_shell && _homerc_reexec_opts+=(-l)
+        exec "${HOME}/.local/bin/bash" "${_homerc_reexec_opts[@]}"
+        unset _homerc_reexec_opts
     fi
 fi
 

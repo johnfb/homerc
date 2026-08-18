@@ -76,7 +76,9 @@ function _homerc_find_includes()
     if [ -d "$1" ]; then
         for f in "$1"/*.sh; do
             if [ -a "$f" ]; then
-                printf '%q %q\n' "$(basename "$f")" "$f"
+                # Sort key and path are tab-separated so paths containing spaces
+                # survive the read below; %q would need a matching unquote.
+                printf '%s\t%s\n' "${f##*/}" "$f"
             fi
         done
         _homerc_find_includes "$1/${HOSTNAME}"
@@ -88,14 +90,14 @@ function _homerc_find_includes()
 function _homerc_gather_includes()
 {
     local f base_f
-    while read base_f f; do
-        printf '%q\n' "${f}"
+    while IFS=$'\t' read -r base_f f; do
+        printf '%s\n' "${f}"
     done < <(
         (_homerc_find_includes "${HOME}/.profile.d"
         _homerc_find_includes "${HOMERC}/profile.d"
         if [[ $- == *i* ]]; then
             _homerc_find_includes "${HOMERC}/rc.d"
-        fi) | sort
+        fi) | LC_ALL=C sort
     )
 }
 

@@ -11,6 +11,12 @@ while getopts "vrf" opt; do
     esac
 done
 shift $((OPTIND-1))
+
+# The -r recursion globs directory contents: dotfiles are the norm in a home
+# directory, and an empty directory must expand to nothing rather than to a
+# literal "dir/*" argument.
+shopt -s dotglob nullglob
+
 function main()
 {
     local filename
